@@ -7,6 +7,9 @@ import Random exposing (..)
 import Material
 import Material.Scheme
 import Material.Button as Button
+import Material.Icon as Icon
+import Material.Grid as Grid
+import Material.Slider as Slider
 import Material.Options exposing (css)
 import Maze exposing (Maze, Cell)
 
@@ -17,20 +20,22 @@ type alias Mdl =
 
 type alias Model =
     { maze : Maze
+    , size : Float
     , mdl : Material.Model
     }
 
 
 model =
     { maze = Maze.grid
+    , size = 2
     , mdl = Material.model
     }
 
 
 type Msg
     = GenerateRandomMaze
-    | RotateRight
     | NewMaze Maze
+    | UpdateMazeSize Float
     | Mdl (Material.Msg Msg)
 
 
@@ -41,10 +46,10 @@ update msg model =
             ( { model | maze = randomMaze }, Cmd.none )
 
         GenerateRandomMaze ->
-            ( model, Random.generate NewMaze Maze.generator )
+            ( model, Random.generate NewMaze (Maze.generator (round model.size)) )
 
-        RotateRight ->
-            ( model, Cmd.none )
+        UpdateMazeSize size' ->
+            ( { model | size = size' }, Cmd.none )
 
         Mdl msg' ->
             Material.update msg' model
@@ -53,17 +58,30 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div [ style [ ( "padding", "3rem" ) ] ]
-        [ Maze.view model.maze
-        , Button.render Mdl
-            [ 0 ]
-            model.mdl
-            [ Button.onClick GenerateRandomMaze, css "marging" "0 24px" ]
-            [ text "Generate Random Maze" ]
-        , Button.render Mdl
-            [ 1 ]
-            model.mdl
-            [ Button.onClick RotateRight ]
-            [ text "RotateRight" ]
+        [ Grid.grid []
+            [ Grid.cell [ Grid.size Grid.All 1 ]
+                [ Button.render Mdl
+                    [ 0 ]
+                    model.mdl
+                    [ Button.onClick GenerateRandomMaze
+                    , css "marging" "0 24px"
+                    , Button.icon
+                    , Button.colored
+                    ]
+                    [ Icon.i "refresh" ]
+                ]
+            , Grid.cell [ Grid.size Grid.All 4 ]
+                [ Slider.view
+                    [ Slider.onChange UpdateMazeSize
+                    , Slider.value model.size
+                    , Slider.max 10
+                    , Slider.min 1
+                    , Slider.step 1
+                    ]
+                ]
+            , Grid.cell [ Grid.size Grid.All 12 ]
+                [ Maze.view model.maze ]
+            ]
         ]
         |> Material.Scheme.top
 

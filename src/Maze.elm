@@ -169,10 +169,10 @@ buildMaze randomInit =
     List.map (List.map buildCell) randomInit
 
 
-generator : Random.Generator Maze
-generator =
+generator : Int -> Random.Generator Maze
+generator size =
     let
         randomInit =
-            Random.list 10 <| Random.list 10 <| Random.pair (Random.int 0 3) (Random.int 0 3)
+            Random.list size <| Random.list size <| Random.pair (Random.int 0 3) (Random.int 0 3)
     in
         Random.map buildMaze randomInit
