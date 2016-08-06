@@ -1,6 +1,7 @@
 module Maze exposing (Maze, Cell, grid, view)
 
-import Html exposing (text, Html, div)
+import Html exposing (text, Html, div, span)
+import Html.Attributes exposing (style)
 
 
 type alias North =
@@ -67,7 +68,25 @@ view maze =
 
 
 drawLine l =
-    div [] (List.map (text << showCell) l)
+    div
+        [ style [ ( "display", "flex" ) ]
+        ]
+        (List.map viewCell l)
+
+
+viewCell : Cell -> Html msg
+viewCell cell =
+    span
+        [ style
+            [ ( "font-size", "6rem" )
+            , ( "line-height", "6rem")
+            , ( "display", "flex" )
+            , ( "margin", "0" )
+            , ( "padding", "0" )
+            , ( "align-content", "center" )
+            ]
+        ]
+        [ text <| showCell cell ]
 
 
 showCell : Cell -> String
