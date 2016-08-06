@@ -30,22 +30,18 @@ model =
 type Msg
     = GenerateRandomMaze
     | RotateRight
-    | NewMaze (List (List ( Int, Int )))
+    | NewMaze Maze
     | Mdl (Material.Msg Msg)
 
-
-generator : Generator (List (List (Int, Int)))
-generator =
-    list 10 <| list 10 <| pair (int 0 3) (int 0 3)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewMaze randomInit ->
-            ( {model | maze = Maze.generateMaze randomInit}, Cmd.none )
+        NewMaze randomMaze ->
+            ( { model | maze = randomMaze }, Cmd.none )
 
         GenerateRandomMaze ->
-            ( model, Random.generate NewMaze generator)
+            ( model, Random.generate NewMaze Maze.generator )
 
         RotateRight ->
             ( model, Cmd.none )

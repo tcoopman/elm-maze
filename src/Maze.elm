@@ -1,7 +1,8 @@
-module Maze exposing (Maze, Cell, grid, view, generateMaze)
+module Maze exposing (Maze, Cell, grid, view, generator)
 
 import Html exposing (text, Html, div, span)
 import Html.Attributes exposing (style)
+import Random
 
 
 type alias North =
@@ -79,7 +80,7 @@ viewCell cell =
     span
         [ style
             [ ( "font-size", "6rem" )
-            , ( "line-height", "6rem")
+            , ( "line-height", "6rem" )
             , ( "display", "flex" )
             , ( "margin", "0" )
             , ( "padding", "0" )
@@ -130,25 +131,48 @@ showCell inputCell =
 -- text (toString <| connectedV straight straight)
 
 
-grid = generateMaze [[(1,2), (0,1)], [(1,1),(3,1)]]
+grid =
+    buildMaze [ [ ( 1, 2 ), ( 0, 1 ) ], [ ( 1, 1 ), ( 3, 1 ) ] ]
+
 
 
 -- generates a random cell, with (type, rotation)
 -- type should be a random from 0 to 3
 -- rotation should be a random int from 0 to 3
-generateCell : (Int, Int) -> Cell
-generateCell (cellType, rotation) =
-  let cell =
-    case (cellType % 4) of
-      0 -> empty
-      1 -> elbow
-      2 -> straight
-      3 -> tee
-      _ -> Debug.crash "This can never happen (% 4)"
-  in
-    rotateN rotation cell
 
 
-generateMaze: List (List (Int, Int)) -> Maze
-generateMaze randomInit =
-  List.map (List.map generateCell) randomInit
+buildCell : ( Int, Int ) -> Cell
+buildCell ( cellType, rotation ) =
+    let
+        cell =
+            case (cellType % 4) of
+                0 ->
+                    empty
+
+                1 ->
+                    elbow
+
+                2 ->
+                    straight
+
+                3 ->
+                    tee
+
+                _ ->
+                    Debug.crash "This can never happen (% 4)"
+    in
+        rotateN rotation cell
+
+
+buildMaze : List (List ( Int, Int )) -> Maze
+buildMaze randomInit =
+    List.map (List.map buildCell) randomInit
+
+
+generator : Random.Generator Maze
+generator =
+    let
+        randomInit =
+            Random.list 10 <| Random.list 10 <| Random.pair (Random.int 0 3) (Random.int 0 3)
+    in
+        Random.map buildMaze randomInit
