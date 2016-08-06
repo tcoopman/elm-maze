@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (Html, div, text)
 import Html.App as App
 import Html.Attributes exposing (href, class, style)
+import Random exposing (..)
 import Material
 import Material.Scheme
 import Material.Button as Button
@@ -27,16 +28,24 @@ model =
 
 
 type Msg
-    = RotateLeft
+    = GenerateRandomMaze
     | RotateRight
+    | NewMaze (List (List ( Int, Int )))
     | Mdl (Material.Msg Msg)
 
+
+generator : Generator (List (List (Int, Int)))
+generator =
+    list 10 <| list 10 <| pair (int 0 3) (int 0 3)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        RotateLeft ->
-            ( model, Cmd.none )
+        NewMaze randomInit ->
+            ( {model | maze = Maze.generateMaze randomInit}, Cmd.none )
+
+        GenerateRandomMaze ->
+            ( model, Random.generate NewMaze generator)
 
         RotateRight ->
             ( model, Cmd.none )
@@ -52,8 +61,8 @@ view model =
         , Button.render Mdl
             [ 0 ]
             model.mdl
-            [ Button.onClick RotateLeft, css "marging" "0 24px" ]
-            [ text "RotateLeft" ]
+            [ Button.onClick GenerateRandomMaze, css "marging" "0 24px" ]
+            [ text "Generate Random Maze" ]
         , Button.render Mdl
             [ 1 ]
             model.mdl
