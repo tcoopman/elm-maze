@@ -12,6 +12,9 @@ import Material.Grid as Grid
 import Material.Slider as Slider
 import Material.Options exposing (css)
 import Maze exposing (Maze, Cell)
+import SvgMaze
+import Svg exposing (svg, use)
+import Svg.Attributes exposing (x, y, xlinkHref)
 
 
 type alias Mdl =
@@ -80,7 +83,7 @@ view model =
                     ]
                 ]
             , Grid.cell [ Grid.size Grid.All 12 ]
-                [ Maze.view model.maze ]
+                [ SvgMaze.view model.maze ]
             ]
         ]
         |> Material.Scheme.top
