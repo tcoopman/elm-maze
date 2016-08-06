@@ -27,7 +27,7 @@ type alias Model =
 
 model =
     { maze = Maze.grid
-    , size = 2
+    , size = 5
     , mdl = Material.model
     }
 
