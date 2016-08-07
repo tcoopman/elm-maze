@@ -6,8 +6,17 @@
   "scripts": {
     "start": "webpack-dev-server --hot --inline --content-base src/"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Thomas Coopman <thomas.coopman@gmail.com>",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/mit-license.php"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:tcoopman/elm-maze.git"
+  },
   "dependencies": {
     "elm-hot-loader": "^0.3.3",
     "elm-webpack-loader": "^3.0.3",
