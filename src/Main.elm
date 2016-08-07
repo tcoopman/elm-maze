@@ -12,9 +12,8 @@ import Material.Grid as Grid
 import Material.Slider as Slider
 import Material.Options exposing (css)
 import Maze exposing (Maze, Cell)
+import PathFinder exposing (pathFinder)
 import SvgMaze
-import Svg exposing (svg, use)
-import Svg.Attributes exposing (x, y, xlinkHref)
 
 
 type alias Mdl =
@@ -22,14 +21,14 @@ type alias Mdl =
 
 
 type alias Model =
-    { maze : Maze
+    { svgMaze : SvgMaze.Model
     , size : Float
     , mdl : Material.Model
     }
 
 
 model =
-    { maze = Maze.grid
+    { svgMaze = SvgMaze.init
     , size = 5
     , mdl = Material.model
     }
@@ -46,7 +45,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewMaze randomMaze ->
-            ( { model | maze = randomMaze }, Cmd.none )
+            ( { model | svgMaze = SvgMaze.update randomMaze model.svgMaze }, Cmd.none )
 
         GenerateRandomMaze ->
             ( model, Random.generate NewMaze (Maze.generator (round model.size)) )
@@ -82,8 +81,10 @@ view model =
                     , Slider.step 1
                     ]
                 ]
+            , Grid.cell [ Grid.size Grid.All 2 ]
+                [ text <| toString <| pathFinder ( 0, 0 ) ( 1, 0 ) model.svgMaze.maze ]
             , Grid.cell [ Grid.size Grid.All 12 ]
-                [ SvgMaze.view model.maze ]
+                [ SvgMaze.view model.svgMaze]
             ]
         ]
         |> Material.Scheme.top

@@ -1,7 +1,5 @@
-module Maze exposing (Maze, Cell(..), grid, generator)
+module Maze exposing (Maze, Cell(..), grid, generator, getCell)
 
-import Html exposing (text, Html, div, span)
-import Html.Attributes exposing (style)
 import Dict exposing (Dict)
 import Random
 
@@ -41,6 +39,7 @@ straight =
     Cell True False True False
 
 
+empty : Cell
 empty =
     Cell False False False False
 
@@ -68,6 +67,12 @@ type alias Maze =
     Dict Position Cell
 
 
+getCell : Position -> Maze -> Cell
+getCell pos maze =
+    Maybe.withDefault empty (Dict.get pos maze)
+
+
+grid : Maze
 grid =
     buildMaze [ [ ( 1, 2 ), ( 0, 1 ) ], [ ( 1, 1 ), ( 3, 1 ) ] ]
 
