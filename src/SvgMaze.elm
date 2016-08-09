@@ -3,7 +3,7 @@ module SvgMaze exposing (view, Model, update, init)
 import Html exposing (Html, div, text, span)
 import Maze exposing (Maze, Cell(..))
 import Svg exposing (svg, use, Attribute, g)
-import Svg.Attributes exposing (x, y, xlinkHref, transform, width, height, d, stroke, x1, x2, y1, y2)
+import Svg.Attributes exposing (x, y, xlinkHref, transform, width, height, d, stroke, x1, x2, y1, y2, fill)
 import Dict
 
 
@@ -64,30 +64,12 @@ viewMaze maze =
         List.map viewCell' cells
 
 
-rotateClockwise : Position -> Int -> Attribute msg
+rotateClockwise : Position -> Int -> List (Attribute msg)
 rotateClockwise ( x, y ) nb =
     let
-        degrees =
-            case nb % 4 of
-                0 ->
-                    "0"
-
-                1 ->
-                    "90"
-
-                2 ->
-                    "180"
-
-                3 ->
-                    "270"
-
-                _ ->
-                    Debug.crash "cannot happen (mod 4)"
-
-        rotTranslate i =
-            i + 50 |> toString
+        degrees = nb % 4 |> (*) 90 |> toString
     in
-        transform ("rotate(" ++ degrees ++ ", " ++ rotTranslate x ++ ", " ++ rotTranslate y ++ ")")
+        [transform ("translate (" ++ (toString <| x) ++ ", " ++ (toString <| y) ++ ")" ++ "rotate(" ++ degrees ++ ",50,50)")]
 
 
 viewPath : List Position -> List (Html msg)
@@ -108,50 +90,64 @@ viewPath positions =
     in
         pair positions |> List.map viewPath'
 
-
 viewCell : Position -> Cell -> Html msg
 viewCell pos cell =
     let
-        baseAttributes =
-            [ x (toString <| fst pos)
-            , y (toString <| snd pos)
-            , width "100"
-            , height "100"
+        square color =
+            Svg.path [ d "M 0 0 H 100 V 100 H 0", fill color ] []
+
+        blank =
+            [ square "white"]
+
+        straight =
+            [ square "black"
+            , Svg.path [ d "M 30 0 H 70 V 100 H 30", fill "green" ] []
             ]
 
-        ref =
-            case cell of
-                Cell True False True False ->
-                    [ xlinkHref "#straight" ] ++ baseAttributes
+        tee =
+            [ square "black"
+            , Svg.path [ d "M 30 0 H 70 V 30 H 100 V 70 H 70 V 100 H 30", fill "green" ] []
+            ]
 
-                Cell False True False True ->
-                    [ xlinkHref "#straight", rotateClockwise pos 1 ] ++ baseAttributes
-
-                Cell True True True False ->
-                    [ xlinkHref "#tee" ] ++ baseAttributes
-
-                Cell False True True True ->
-                    [ xlinkHref "#tee", rotateClockwise pos 1 ] ++ baseAttributes
-
-                Cell True False True True ->
-                    [ xlinkHref "#tee", rotateClockwise pos 2 ] ++ baseAttributes
-
-                Cell True True False True ->
-                    [ xlinkHref "#tee", rotateClockwise pos 3 ] ++ baseAttributes
-
-                Cell False True True False ->
-                    [ xlinkHref "#elbow" ] ++ baseAttributes
-
-                Cell False False True True ->
-                    [ xlinkHref "#elbow", rotateClockwise pos 1 ] ++ baseAttributes
-
-                Cell True False False True ->
-                    [ xlinkHref "#elbow", rotateClockwise pos 2 ] ++ baseAttributes
-
-                Cell True True False False ->
-                    [ xlinkHref "#elbow", rotateClockwise pos 3 ] ++ baseAttributes
-
-                _ ->
-                    [ xlinkHref "#blank" ] ++ baseAttributes
+        elbow =
+            [ square "black"
+            , Svg.path [ d "M 30 0 H 70 V 30 H 100 V 70 H 30", fill "green" ] []
+            ]
     in
-        use ref []
+        case cell of
+            -- straight
+            Cell True False True False ->
+                g (rotateClockwise pos 0) straight
+
+            Cell False True False True ->
+                g (rotateClockwise pos 1) straight
+
+            -- tee
+            Cell True True True False ->
+                g (rotateClockwise pos 0) tee
+
+            Cell False True True True ->
+                g (rotateClockwise pos 1) tee
+
+            Cell True False True True ->
+                g (rotateClockwise pos 2) tee
+
+            Cell True True False True ->
+                g (rotateClockwise pos 3) tee
+
+            -- elbow
+            Cell False True True False ->
+                g (rotateClockwise pos 0) elbow
+
+            Cell False False True True ->
+                g (rotateClockwise pos 1) elbow
+
+            Cell True False False True ->
+                g (rotateClockwise pos 2) elbow
+
+            Cell True True False False ->
+                g (rotateClockwise pos 3) elbow
+
+            -- blank
+            _ ->
+                g (rotateClockwise pos 0) blank
