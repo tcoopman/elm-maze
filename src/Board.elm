@@ -1,4 +1,4 @@
-module SvgMaze exposing (view, Model, update, init)
+module Board exposing (view, Model, update, init)
 
 import Html exposing (Html, div, text, span)
 import Maze exposing (Maze, Cell(..))
@@ -94,10 +94,10 @@ viewCell : Position -> Cell -> Html msg
 viewCell pos cell =
     let
         square color =
-            Svg.path [ d "M 0 0 H 100 V 100 H 0", fill color ] []
+            Svg.path [ d "M 1 1 H 99 V 99 H 1", fill color ] []
 
         blank =
-            [ square "white"]
+            [ square "gray"]
 
         straight =
             [ square "black"

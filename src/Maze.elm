@@ -1,7 +1,9 @@
-module Maze exposing (Maze, Cell(..), grid, generator, getCell)
+module Maze exposing (Maze, Cell(..), generator, getCell)
 
 import Dict exposing (Dict)
 import Random
+import Random.Array exposing (shuffle)
+import Array
 
 
 type alias North =
@@ -24,23 +26,29 @@ type Cell
     = Cell North East South West
 
 
+{-| ┌ ┐ ┘ └
+-}
 elbow : Cell
 elbow =
     Cell True True False False
 
 
+{-| ┴ ├  ┬ ┤
+-}
 tee : Cell
 tee =
     Cell True True False True
 
 
+{-| rotateN 0 -> │ or rotateN 1 -> ─
+-}
 straight : Cell
 straight =
     Cell True False True False
 
 
-empty : Cell
-empty =
+blank : Cell
+blank =
     Cell False False False False
 
 
@@ -69,48 +77,97 @@ type alias Maze =
 
 getCell : Position -> Maze -> Cell
 getCell pos maze =
-    Maybe.withDefault empty (Dict.get pos maze)
+    Maybe.withDefault blank (Dict.get pos maze)
 
 
-grid : Maze
-grid =
-    buildMaze [ [ ( 1, 2 ), ( 0, 1 ) ], [ ( 1, 1 ), ( 3, 1 ) ] ]
+generator : Int -> Random.Generator Maze
+generator size = Random.map fst generator'
 
 
-{-| generates a random cell, with (type, rotation)
+{-| Generates a random maze.
 
-type should be a random from 0 to 3
-rotation should be a random int from 0 to 3
+A maze has a very specific build:
+
+* A board is 7 by 7 (so 49 tiles)
+* 16 tiles are *fixed*
+* The game has 12 straight, 15 elbow and 7 tee tiles
+* This is a total of 50. The extra tile is the starting tile.
 -}
-buildCell : ( Int, Int ) -> Cell
-buildCell ( cellType, rotation ) =
+generator' : Random.Generator ( Maze, Cell )
+generator' =
     let
-        cell =
-            case (cellType % 4) of
-                0 ->
-                    empty
+        fixedTiles =
+            [ (rotateN 2 elbow)
+            , (rotateN 2 tee)
+            , (rotateN 2 tee)
+            , (rotateN 3 elbow)
+            , (rotateN 1 tee)
+            , (rotateN 1 tee)
+            , (rotateN 2 tee)
+            , (rotateN 3 tee)
+            , (rotateN 1 tee)
+            , (rotateN 0 tee)
+            , (rotateN 3 tee)
+            , (rotateN 3 tee)
+            , (rotateN 1 elbow)
+            , (rotateN 0 tee)
+            , (rotateN 0 tee)
+            , (rotateN 0 elbow)
+            ]
 
-                1 ->
-                    elbow
+        randomTilesGenerator =
+            let
+                tiles =
+                    List.repeat 12 straight ++ List.repeat 15 elbow ++ List.repeat 7 tee
 
-                2 ->
-                    straight
+                permutated =
+                    Random.map (Array.toList) (shuffle (Array.fromList tiles))
 
-                3 ->
-                    tee
+                randomRotations =
+                    Random.list (List.length tiles) <| (Random.int 0 3)
 
-                _ ->
-                    Debug.crash "This can never happen (% 4)"
+                mapper l1 l2 =
+                    case ( l1, l2 ) of
+                        ( cell :: cells, rot :: rotations ) ->
+                            (rotateN rot cell) :: (mapper cells rotations)
+
+                        ( _, _ ) ->
+                            []
+            in
+                Random.map2 mapper permutated randomRotations
+
+        allTiles =
+            let
+                combine fixed random =
+                    case ( fixed, random ) of
+                        ( f1 :: f2 :: f3 :: f4 :: fixedRest, x :: y :: z :: randomRest ) ->
+                            f1 :: x :: f2 :: y :: f3 :: z :: f4 :: (List.take 7 randomRest) ++ (combine fixedRest (List.drop 7 randomRest))
+                        ( _, _ ) ->
+                            []
+            in
+                Random.map (combine fixedTiles) randomTilesGenerator
+
+        toMaze =
+            let
+                mazer allTiles =
+                    [ List.take 7 allTiles
+                    , List.take 7 (List.drop 7 allTiles)
+                    , List.take 7 (List.drop 14 allTiles)
+                    , List.take 7 (List.drop 21 allTiles)
+                    , List.take 7 (List.drop 28 allTiles)
+                    , List.take 7 (List.drop 35 allTiles)
+                    , List.take 7 (List.drop 42 allTiles)
+                    ]
+                        |> buildMaze'
+            in
+                Random.map mazer allTiles
     in
-        rotateN rotation cell
+        Random.map (\maze -> ( maze, elbow )) toMaze
 
 
-buildMaze : List (List ( Int, Int )) -> Maze
-buildMaze randomInit =
+buildMaze' : List (List Cell) -> Maze
+buildMaze' cells =
     let
-        listMaze =
-            List.map (List.map buildCell) randomInit
-
         withX x rows =
             List.indexedMap (withY x) rows
 
@@ -118,15 +175,6 @@ buildMaze randomInit =
             ( ( x, y ), cell )
 
         dictList =
-            List.indexedMap withX listMaze
+            List.indexedMap withX cells
     in
         Dict.fromList (List.concat dictList)
-
-
-generator : Int -> Random.Generator Maze
-generator size =
-    let
-        randomInit =
-            Random.list size <| Random.list size <| Random.pair (Random.int 0 3) (Random.int 0 3)
-    in
-        Random.map buildMaze randomInit
