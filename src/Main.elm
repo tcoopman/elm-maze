@@ -9,7 +9,6 @@ import Material.Scheme
 import Material.Button as Button
 import Material.Icon as Icon
 import Material.Grid as Grid
-import Material.Slider as Slider
 import Material.Options exposing (css)
 import Maze exposing (Maze, Cell)
 import PathFinder exposing (pathFinder)
@@ -21,14 +20,14 @@ type alias Mdl =
 
 
 type alias Model =
-    { svgMaze : Board.Model
+    { board : Board.Model
     , size : Float
     , mdl : Material.Model
     }
 
 
 model =
-    { svgMaze = Board.init
+    { board = Board.init
     , size = 5
     , mdl = Material.model
     }
@@ -37,7 +36,6 @@ model =
 type Msg
     = GenerateRandomMaze
     | NewMaze Maze
-    | UpdateMazeSize Float
     | Mdl (Material.Msg Msg)
 
 
@@ -45,13 +43,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewMaze randomMaze ->
-            ( { model | svgMaze = Board.update randomMaze model.svgMaze }, Cmd.none )
+            ( { model | board = Board.update (Board.updateMaze randomMaze) model.board }, Cmd.none )
 
         GenerateRandomMaze ->
             ( model, Random.generate NewMaze (Maze.generator (round model.size)) )
-
-        UpdateMazeSize size' ->
-            ( { model | size = size' }, Cmd.none )
 
         Mdl msg' ->
             Material.update msg' model
@@ -72,19 +67,10 @@ view model =
                     ]
                     [ Icon.i "refresh" ]
                 ]
-            , Grid.cell [ Grid.size Grid.All 4 ]
-                [ Slider.view
-                    [ Slider.onChange UpdateMazeSize
-                    , Slider.value model.size
-                    , Slider.max 10
-                    , Slider.min 1
-                    , Slider.step 1
-                    ]
-                ]
             , Grid.cell [ Grid.size Grid.All 2 ]
-                [ text <| toString <| pathFinder ( 0, 0 ) ( 1, 0 ) model.svgMaze.maze ]
+                [ text <| toString <| pathFinder ( 0, 0 ) ( 1, 0 ) model.board.maze ]
             , Grid.cell [ Grid.size Grid.All 12 ]
-                [ Board.view model.svgMaze]
+                [ Board.view model.board]
             ]
         ]
         |> Material.Scheme.top
