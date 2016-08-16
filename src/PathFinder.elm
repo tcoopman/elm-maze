@@ -1,6 +1,6 @@
 module PathFinder exposing (pathFinder)
 
-import Maze exposing (Maze, Cell(..))
+import Maze exposing (Maze, Tile(..))
 import Set exposing (Set)
 import Dict exposing (Dict)
 
@@ -17,20 +17,20 @@ type alias Position =
     ( X, Y )
 
 
-connectedH : Cell -> Cell -> Bool
+connectedH : Tile -> Tile -> Bool
 connectedH left right =
     case ( left, right ) of
-        ( Cell _ True _ _, Cell _ _ _ True ) ->
+        ( Tile _ True _ _, Tile _ _ _ True ) ->
             True
 
         _ ->
             False
 
 
-connectedV : Cell -> Cell -> Bool
+connectedV : Tile -> Tile -> Bool
 connectedV up down =
     case ( up, down ) of
-        ( Cell _ _ True _, Cell True _ _ _ ) ->
+        ( Tile _ _ True _, Tile True _ _ _ ) ->
             True
 
         _ ->

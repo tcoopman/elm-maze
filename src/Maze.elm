@@ -1,4 +1,4 @@
-module Maze exposing (Maze, Cell(..), generator, getCell)
+module Maze exposing (Maze, Tile(..), generator, getTile)
 
 import Dict exposing (Dict)
 import Random
@@ -22,49 +22,49 @@ type alias West =
     Bool
 
 
-type Cell
-    = Cell North East South West
+type Tile
+    = Tile North East South West
 
 
 {-| ┌ ┐ ┘ └
 -}
-elbow : Cell
+elbow : Tile
 elbow =
-    Cell True True False False
+    Tile True True False False
 
 
 {-| ┴ ├  ┬ ┤
 -}
-tee : Cell
+tee : Tile
 tee =
-    Cell True True False True
+    Tile True True False True
 
 
 {-| rotateN 0 -> │ or rotateN 1 -> ─
 -}
-straight : Cell
+straight : Tile
 straight =
-    Cell True False True False
+    Tile True False True False
 
 
-blank : Cell
+blank : Tile
 blank =
-    Cell False False False False
+    Tile False False False False
 
 
-rotate : Cell -> Cell
-rotate inputCell =
-    case inputCell of
-        Cell a b c d ->
-            Cell d a b c
+rotate : Tile -> Tile
+rotate inputTile =
+    case inputTile of
+        Tile a b c d ->
+            Tile d a b c
 
 
-rotateN : Int -> Cell -> Cell
-rotateN n inputCell =
+rotateN : Int -> Tile -> Tile
+rotateN n inputTile =
     if n > 0 then
-        rotateN (n - 1) (rotate inputCell)
+        rotateN (n - 1) (rotate inputTile)
     else
-        inputCell
+        inputTile
 
 
 type alias Position =
@@ -72,11 +72,11 @@ type alias Position =
 
 
 type alias Maze =
-    Dict Position Cell
+    Dict Position Tile
 
 
-getCell : Position -> Maze -> Cell
-getCell pos maze =
+getTile : Position -> Maze -> Tile
+getTile pos maze =
     Maybe.withDefault blank (Dict.get pos maze)
 
 
@@ -93,7 +93,7 @@ A maze has a very specific build:
 * The game has 12 straight, 15 elbow and 7 tee tiles
 * This is a total of 50. The extra tile is the starting tile.
 -}
-generator' : Random.Generator ( Maze, Cell )
+generator' : Random.Generator ( Maze, Tile )
 generator' =
     let
         fixedTiles =
@@ -165,7 +165,7 @@ generator' =
         Random.map (\maze -> ( maze, elbow )) toMaze
 
 
-buildMaze' : List (List Cell) -> Maze
+buildMaze' : List (List Tile) -> Maze
 buildMaze' cells =
     let
         withX x rows =

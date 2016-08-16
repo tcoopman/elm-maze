@@ -10,7 +10,7 @@ import Material.Button as Button
 import Material.Icon as Icon
 import Material.Grid as Grid
 import Material.Options exposing (css)
-import Maze exposing (Maze, Cell)
+import Maze exposing (Maze, Tile)
 import PathFinder exposing (pathFinder)
 import Board
 

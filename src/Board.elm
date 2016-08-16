@@ -1,7 +1,7 @@
 module Board exposing (view, Model, update, init, updateMaze, Msg)
 
 import Html exposing (Html, div, text, span)
-import Maze exposing (Maze, Cell(..))
+import Maze exposing (Maze, Tile(..))
 import Svg exposing (svg, use, Attribute, g)
 import Svg.Attributes exposing (x, y, xlinkHref, transform, width, height, d, stroke, x1, x2, y1, y2, fill)
 import Dict
@@ -68,10 +68,10 @@ viewMaze maze =
         cells =
             Dict.toList maze
 
-        viewCell' ( ( x, y ), cell ) =
-            viewCell ( y * 100, x * 100 ) cell
+        viewTile' ( ( x, y ), cell ) =
+            viewTile ( y * 100, x * 100 ) cell
     in
-        List.map viewCell' cells
+        List.map viewTile' cells
 
 
 rotateClockwise : Position -> Int -> List (Attribute msg)
@@ -100,8 +100,8 @@ viewPath positions =
     in
         pair positions |> List.map viewPath'
 
-viewCell : Position -> Cell -> Html msg
-viewCell pos cell =
+viewTile : Position -> Tile -> Html msg
+viewTile pos cell =
     let
         square color =
             Svg.path [ d "M 1 1 H 99 V 99 H 1", fill color ] []
@@ -126,36 +126,36 @@ viewCell pos cell =
     in
         case cell of
             -- straight
-            Cell True False True False ->
+            Tile True False True False ->
                 g (rotateClockwise pos 0) straight
 
-            Cell False True False True ->
+            Tile False True False True ->
                 g (rotateClockwise pos 1) straight
 
             -- tee
-            Cell True True True False ->
+            Tile True True True False ->
                 g (rotateClockwise pos 0) tee
 
-            Cell False True True True ->
+            Tile False True True True ->
                 g (rotateClockwise pos 1) tee
 
-            Cell True False True True ->
+            Tile True False True True ->
                 g (rotateClockwise pos 2) tee
 
-            Cell True True False True ->
+            Tile True True False True ->
                 g (rotateClockwise pos 3) tee
 
             -- elbow
-            Cell False True True False ->
+            Tile False True True False ->
                 g (rotateClockwise pos 0) elbow
 
-            Cell False False True True ->
+            Tile False False True True ->
                 g (rotateClockwise pos 1) elbow
 
-            Cell True False False True ->
+            Tile True False False True ->
                 g (rotateClockwise pos 2) elbow
 
-            Cell True True False False ->
+            Tile True True False False ->
                 g (rotateClockwise pos 3) elbow
 
             -- blank
