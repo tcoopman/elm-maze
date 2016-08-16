@@ -81,7 +81,8 @@ getTile pos maze =
 
 
 generator : Int -> Random.Generator Maze
-generator size = Random.map fst generator'
+generator size =
+    Random.map fst generator'
 
 
 {-| Generates a random maze.
@@ -142,6 +143,7 @@ generator' =
                     case ( fixed, random ) of
                         ( f1 :: f2 :: f3 :: f4 :: fixedRest, x :: y :: z :: randomRest ) ->
                             f1 :: x :: f2 :: y :: f3 :: z :: f4 :: (List.take 7 randomRest) ++ (combine fixedRest (List.drop 7 randomRest))
+
                         ( _, _ ) ->
                             []
             in

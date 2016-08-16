@@ -70,7 +70,7 @@ view model =
             , Grid.cell [ Grid.size Grid.All 2 ]
                 [ text <| toString <| pathFinder ( 0, 0 ) ( 1, 0 ) model.board.maze ]
             , Grid.cell [ Grid.size Grid.All 12 ]
-                [ Board.view model.board]
+                [ Board.view model.board ]
             ]
         ]
         |> Material.Scheme.top

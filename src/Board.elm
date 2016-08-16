@@ -26,7 +26,10 @@ pair xs =
 type alias Position =
     ( Int, Int )
 
-type alias Path = List Position
+
+type alias Path =
+    List Position
+
 
 type alias Model =
     { maze : Maze
@@ -40,18 +43,25 @@ init =
     , path = [ ( 0, 0 ), ( 0, 1 ), ( 1, 1 ) ]
     }
 
-type Msg =
-    MazeInitialized Maze
+
+type Msg
+    = MazeInitialized Maze
     | PathUpdated Path
 
+
 updateMaze : Maze -> Msg
-updateMaze maze = MazeInitialized maze
+updateMaze maze =
+    MazeInitialized maze
+
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        MazeInitialized maze -> { model | maze = maze }
-        PathUpdated path -> {model | path = path }
+        MazeInitialized maze ->
+            { model | maze = maze }
+
+        PathUpdated path ->
+            { model | path = path }
 
 
 view : Model -> Html msg
@@ -77,9 +87,10 @@ viewMaze maze =
 rotateClockwise : Position -> Int -> List (Attribute msg)
 rotateClockwise ( x, y ) nb =
     let
-        degrees = nb % 4 |> (*) 90 |> toString
+        degrees =
+            nb % 4 |> (*) 90 |> toString
     in
-        [transform ("translate (" ++ (toString <| x) ++ ", " ++ (toString <| y) ++ ")" ++ "rotate(" ++ degrees ++ ",50,50)")]
+        [ transform ("translate (" ++ (toString <| x) ++ ", " ++ (toString <| y) ++ ")" ++ "rotate(" ++ degrees ++ ",50,50)") ]
 
 
 viewPath : List Position -> List (Html msg)
@@ -100,6 +111,7 @@ viewPath positions =
     in
         pair positions |> List.map viewPath'
 
+
 viewTile : Position -> Tile -> Html msg
 viewTile pos cell =
     let
@@ -107,7 +119,7 @@ viewTile pos cell =
             Svg.path [ d "M 1 1 H 99 V 99 H 1", fill color ] []
 
         blank =
-            [ square "gray"]
+            [ square "gray" ]
 
         straight =
             [ square "black"
