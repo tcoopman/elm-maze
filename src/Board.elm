@@ -1,4 +1,4 @@
-module Board exposing (view, Model, update, init, updateMaze, Msg)
+module Board exposing (view, Model, update, empty, initBoardMsg, Msg)
 
 import Html exposing (Html, div, text, span)
 import Maze exposing (Maze, Tile(..))
@@ -33,32 +33,34 @@ type alias Path =
 
 type alias Model =
     { maze : Maze
+    , playingTile : Tile
     , path : Path
     }
 
 
-init : Model
-init =
+empty : Model
+empty =
     { maze = Dict.empty
-    , path = [ ( 0, 0 ), ( 0, 1 ), ( 1, 1 ) ]
+    , playingTile = Maze.blank
+    , path = []
     }
 
 
 type Msg
-    = MazeInitialized Maze
+    = MazeInitialized Maze Tile
     | PathUpdated Path
 
 
-updateMaze : Maze -> Msg
-updateMaze maze =
-    MazeInitialized maze
+initBoardMsg : ( Maze, Tile ) -> Msg
+initBoardMsg ( maze, tile ) =
+    MazeInitialized maze tile
 
 
 update : Msg -> Model -> Model
 update msg model =
     case msg of
-        MazeInitialized maze ->
-            { model | maze = maze }
+        MazeInitialized maze tile ->
+            { model | maze = maze, playingTile = tile }
 
         PathUpdated path ->
             { model | path = path }

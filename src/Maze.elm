@@ -1,4 +1,4 @@
-module Maze exposing (Maze, Tile(..), generator, getTile)
+module Maze exposing (Maze, Tile(..), generator, getTile, blank)
 
 import Dict exposing (Dict)
 import Random
@@ -80,11 +80,6 @@ getTile pos maze =
     Maybe.withDefault blank (Dict.get pos maze)
 
 
-generator : Int -> Random.Generator Maze
-generator size =
-    Random.map fst generator'
-
-
 {-| Generates a random maze.
 
 A maze has a very specific build:
@@ -94,8 +89,8 @@ A maze has a very specific build:
 * The game has 12 straight, 15 elbow and 7 tee tiles
 * This is a total of 50. The extra tile is the starting tile.
 -}
-generator' : Random.Generator ( Maze, Tile )
-generator' =
+generator : Random.Generator ( Maze, Tile )
+generator =
     let
         fixedTiles =
             [ (rotateN 2 elbow)

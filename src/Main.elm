@@ -21,32 +21,30 @@ type alias Mdl =
 
 type alias Model =
     { board : Board.Model
-    , size : Float
     , mdl : Material.Model
     }
 
 
 model =
-    { board = Board.init
-    , size = 5
+    { board = Board.empty
     , mdl = Material.model
     }
 
 
 type Msg
     = GenerateRandomMaze
-    | NewMaze Maze
+    | NewGame ( Maze, Tile )
     | Mdl (Material.Msg Msg)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NewMaze randomMaze ->
-            ( { model | board = Board.update (Board.updateMaze randomMaze) model.board }, Cmd.none )
+        NewGame ( maze, tile ) ->
+            ( { model | board = Board.update (Board.initBoardMsg ( maze, tile )) model.board }, Cmd.none )
 
         GenerateRandomMaze ->
-            ( model, Random.generate NewMaze (Maze.generator (round model.size)) )
+            ( model, Random.generate NewGame Maze.generator )
 
         Mdl msg' ->
             Material.update msg' model
