@@ -66,7 +66,7 @@ view model =
                     [ Icon.i "refresh" ]
                 ]
             , Grid.cell [ Grid.size Grid.All 2 ]
-                [ text <| toString <| pathFinder ( 0, 0 ) ( 1, 0 ) model.board.maze ]
+                [ text <| toString <| pathFinder ( 0, 0 ) ( 3, 3 ) model.board.maze ]
             , Grid.cell [ Grid.size Grid.All 12 ]
                 [ Board.view model.board ]
             ]

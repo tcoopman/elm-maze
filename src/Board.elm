@@ -81,7 +81,7 @@ viewMaze maze =
             Dict.toList maze
 
         viewTile' ( ( x, y ), cell ) =
-            viewTile ( y * 100, x * 100 ) cell
+            viewTile ( x * 100, y * 100 ) cell
     in
         List.map viewTile' cells
 
@@ -160,16 +160,16 @@ viewTile pos cell =
                 g (rotateClockwise pos 3) tee
 
             -- elbow
-            Tile False True True False ->
+            Tile True True False False ->
                 g (rotateClockwise pos 0) elbow
 
-            Tile False False True True ->
+            Tile False True True False ->
                 g (rotateClockwise pos 1) elbow
 
-            Tile True False False True ->
+            Tile False False True True ->
                 g (rotateClockwise pos 2) elbow
 
-            Tile True True False False ->
+            Tile True False False True ->
                 g (rotateClockwise pos 3) elbow
 
             -- blank

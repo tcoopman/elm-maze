@@ -93,10 +93,10 @@ generator : Random.Generator ( Maze, Tile )
 generator =
     let
         fixedTiles =
-            [ (rotateN 2 elbow)
+            [ (rotateN 1 elbow)
             , (rotateN 2 tee)
             , (rotateN 2 tee)
-            , (rotateN 3 elbow)
+            , (rotateN 2 elbow)
             , (rotateN 1 tee)
             , (rotateN 1 tee)
             , (rotateN 2 tee)
@@ -105,10 +105,10 @@ generator =
             , (rotateN 0 tee)
             , (rotateN 3 tee)
             , (rotateN 3 tee)
-            , (rotateN 1 elbow)
-            , (rotateN 0 tee)
-            , (rotateN 0 tee)
             , (rotateN 0 elbow)
+            , (rotateN 0 tee)
+            , (rotateN 0 tee)
+            , (rotateN 3 elbow)
             ]
 
         randomTilesGenerator =
@@ -165,13 +165,13 @@ generator =
 buildMaze' : List (List Tile) -> Maze
 buildMaze' cells =
     let
-        withX x rows =
-            List.indexedMap (withY x) rows
+        withY y rows =
+            List.indexedMap (withX y) rows
 
-        withY x y cell =
+        withX y x cell =
             ( ( x, y ), cell )
 
         dictList =
-            List.indexedMap withX cells
+            List.indexedMap withY cells
     in
-        Dict.fromList (List.concat dictList)
+        Dict.fromList <| List.concat dictList

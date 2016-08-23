@@ -1,8 +1,18 @@
 module PathFinder exposing (pathFinder)
 
-import Maze exposing (Maze, Tile(..))
+import Maze exposing (Maze, Tile(..), blank)
 import Set exposing (Set)
 import Dict exposing (Dict)
+
+
+fromJust : Maybe a -> a
+fromJust just =
+    case just of
+        Nothing ->
+            Debug.crash "did you just do a fromJust on Nothing???"
+
+        Just a ->
+            a
 
 
 type alias X =
@@ -17,100 +27,82 @@ type alias Position =
     ( X, Y )
 
 
-connectedH : Tile -> Tile -> Bool
-connectedH left right =
-    case ( left, right ) of
-        ( Tile _ True _ _, Tile _ _ _ True ) ->
+type alias PositionedTile =
+    ( Position, Tile )
+
+
+positionedTile : Position -> Maze -> PositionedTile
+positionedTile pos maze =
+    ( pos, Maybe.withDefault blank <| Dict.get pos maze )
+
+
+connected : PositionedTile -> PositionedTile -> Bool
+connected ( ( x1, y1 ), tile1 ) ( ( x2, y2 ), tile2 ) =
+    case ( (x1 - x2), (y1 - y2), tile1, tile2 ) of
+        ( 1, 0, Tile _ _ _ True, Tile _ True _ _ ) ->
+            True
+
+        ( -1, 0, Tile _ True _ _, Tile _ _ _ True ) ->
+            True
+
+        ( 0, 1, Tile True _ _ _, Tile _ _ True _ ) ->
+            True
+
+        ( 0, -1, Tile _ _ True _, Tile True _ _ _ ) ->
             True
 
         _ ->
             False
-
-
-connectedV : Tile -> Tile -> Bool
-connectedV up down =
-    case ( up, down ) of
-        ( Tile _ _ True _, Tile True _ _ _ ) ->
-            True
-
-        _ ->
-            False
-
-
-pathFinder : Position -> Position -> Maze -> Bool
-pathFinder from to grid =
-    pathFinder' from to grid (connectedNeighbours from grid) Set.empty
-
-
-pathFinder' : Position -> Position -> Maze -> List Position -> Set Position -> Bool
-pathFinder' from to grid toVisit visited =
-    False
-
-
-type alias A =
-    { closedSet :
-        Set Position
-        -- nodes already evaluated
-    , openSet :
-        Set Position
-        -- still to be evaluated
-    , cameFrom :
-        Dict Position Position
-        -- for each node, what node can be most efficiently reached
-    , gScore :
-        Dict Position Int
-        -- for each node, the cost from start to that node
-    , fScore :
-        Dict Position Int
-        -- for each node, the cost from start to the goal, passing this node
-    , result : List Position
-    }
-
-
-aStar : Position -> Position -> Maze -> A -> List Position
-aStar start goal maze a =
-    let
-        openList =
-            Set.toList a.openSet
-
-        lowestFScoreInOpenSet =
-            let
-                score position ( fScore, bestPos ) =
-                    case (Dict.get position a.fScore) of
-                        Nothing ->
-                            ( fScore, bestPos )
-
-                        Just a ->
-                            if a < fScore then
-                                ( a, Just position )
-                            else
-                                ( fScore, bestPos )
-            in
-                case (List.foldr score ( 99999, Nothing ) openList) of
-                    ( _, Nothing ) ->
-                        Debug.crash "There should always be an elment"
-
-                    ( _, Just current ) ->
-                        current
-
-        reconstructPath cameFrom current totalPath =
-            []
-    in
-        case openList of
-            [] ->
-                a.result
-
-            _ ->
-                let
-                    current =
-                        lowestFScoreInOpenSet
-                in
-                    if current == goal then
-                        reconstructPath a.cameFrom current []
-                    else
-                        []
 
 
 connectedNeighbours : Position -> Maze -> List Position
-connectedNeighbours position grid =
-    []
+connectedNeighbours (( x, y ) as pos) maze =
+    [ ( x - 1, y ), ( x + 1, y ), ( x, y - 1 ), ( x, y + 1 ) ]
+        |> List.map (\pos -> positionedTile pos maze)
+        |> List.filter (connected (positionedTile pos maze))
+        |> List.map fst
+
+
+pathFinder : Position -> Position -> Maze -> List Position
+pathFinder from to maze =
+    let
+        initialConnectedNeighbours =
+            Set.fromList <| connectedNeighbours from maze
+    in
+        pathFinder' from from to maze initialConnectedNeighbours (Set.singleton from) []
+
+
+pathFinder' : Position -> Position -> Position -> Maze -> Set Position -> Set Position -> List Position -> List Position
+pathFinder' origFrom from to maze toVisit visited path =
+    case Set.size toVisit of
+        0 ->
+            []
+
+        _ ->
+            case Set.member to toVisit of
+                True ->
+                    to :: path
+
+                False ->
+                    let
+                        distance (x1, y1) (x2, y2) =
+                            (abs <| x1 - x2) + (abs <| y1 - y2)
+                        next =
+                            toVisit
+                                |> Set.toList
+                                |> List.map (\pos -> (pos, distance origFrom pos))
+                                |> List.sortBy snd
+                                |> List.head
+                                |> fromJust
+                                |> fst
+
+                        markedAsVisited =
+                            Set.insert next visited
+
+                        allConnected =
+                            connectedNeighbours next maze
+                                |> Set.fromList
+                                |> Set.union toVisit
+                                |> \temp -> Set.diff temp markedAsVisited
+                    in
+                        pathFinder' origFrom next to maze allConnected markedAsVisited (from :: path)
