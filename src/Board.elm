@@ -1,4 +1,4 @@
-module Board exposing (view, Model, update, empty, initBoardMsg, Msg)
+module Board exposing (view, Model, update, empty, initBoardMsg, updatePathMsg, Msg)
 
 import Html exposing (Html, div, text, span)
 import Maze exposing (Maze, Tile(..))
@@ -54,6 +54,11 @@ type Msg
 initBoardMsg : ( Maze, Tile ) -> Msg
 initBoardMsg ( maze, tile ) =
     MazeInitialized maze tile
+
+
+updatePathMsg : Path -> Msg
+updatePathMsg path =
+    PathUpdated path
 
 
 update : Msg -> Model -> Model

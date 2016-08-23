@@ -76,7 +76,7 @@ pathFinder' : Position -> Position -> Position -> Maze -> Set Position -> Set Po
 pathFinder' origFrom from to maze toVisit visited path =
     case Set.size toVisit of
         0 ->
-            []
+            path
 
         _ ->
             case Set.member to toVisit of

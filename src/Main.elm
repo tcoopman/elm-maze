@@ -41,7 +41,11 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NewGame ( maze, tile ) ->
-            ( { model | board = Board.update (Board.initBoardMsg ( maze, tile )) model.board }, Cmd.none )
+            let
+                update1 = Board.update (Board.initBoardMsg (maze, tile)) model.board
+                update2 = Board.update (Board.updatePathMsg (pathFinder (0, 0) (3, 3) update1.maze)) update1
+            in
+                ( { model | board = update2 }, Cmd.none )
 
         GenerateRandomMaze ->
             ( model, Random.generate NewGame Maze.generator )
